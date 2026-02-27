@@ -1,140 +1,231 @@
-# PRECOG EDGE — Predictive Physical Intelligence Engine
+# PRECOG Edge
 
-> **"We are not improving perception. We are giving machines foresight."**
+### Predictive Physical Intelligence Engine
 
-A proof-of-concept for a new computing layer: **Reactive AI → Preventive AI**.
+**AMD Open Innovation Hackathon Project — Temporal Systems Lab**
 
-Instead of detecting collisions, PRECOG EDGE predicts them — and acts before they happen.
+---
+
+## What is PRECOG Edge?
+
+PRECOG Edge is a real-time predictive cognition system that enables machines to anticipate dangerous events before they occur.
+
+Current autonomous systems react **after** a situation becomes unsafe.
+PRECOG Edge predicts unsafe outcomes **before** they happen and prevents them.
+
+Instead of:
+
+> detect → react
+
+We demonstrate:
+
+> observe → predict → prevent
+
+The system models motion dynamics, forecasts future trajectories, evaluates risk, and autonomously blocks unsafe machine actions within a real-time control loop.
+
+---
+
+## The Problem
+
+Robots, drones, and autonomous machines today rely on perception-based AI.
+They detect objects but do not understand physical consequences.
+
+This creates a critical limitation:
+
+* robots require safety cages
+* collaborative automation is restricted
+* accidents still occur
+* autonomy cannot be fully trusted
+
+The root issue is not perception accuracy.
+
+It is the inability to compute **future physical state** within the control loop deadline (~20–30 ms).
+
+Machines can see the world.
+They cannot foresee it.
+
+---
+
+## Our Insight
+
+Safe autonomy requires a missing layer:
+
+**Predictive Physical Intelligence**
+
+A machine must choose actions based on *what the world will become*, not what the world currently is.
+
+PRECOG Edge introduces a foresight layer that predicts near-future motion and prevents unsafe actions before collision occurs.
+
+---
+
+## Key Features
+
+* Real-time motion tracking
+* Kalman filter state estimation
+* Future trajectory prediction
+* Predictive collision detection
+* Autonomous safety control
+* Live explainable visualization
+
+---
+
+## How It Works
+
+1. Camera detects moving object
+2. System estimates velocity and direction
+3. Future positions are predicted
+4. Predicted trajectory checked against protected workspace
+5. Robot actuator automatically stops if danger is predicted
+
+The robot stops **before** impact occurs.
+
+---
+
+## Demo Behavior
+
+When an object moves toward the protected zone:
+
+• Warning appears early
+• Robot motion freezes
+• Collision is prevented
+
+The system does not react to a collision.
+
+It prevents a collision.
 
 ---
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        PRECOG EDGE PIPELINE                         │
-│                                                                     │
-│  ┌──────────┐    ┌──────────────┐    ┌─────────────┐    ┌───────┐  │
-│  │ SENSOR   │───▶│    STATE     │───▶│  TRAJECTORY │───▶│SAFETY │  │
-│  │ LAYER    │    │  ESTIMATION  │    │  PREDICTION │    │ENGINE │  │
-│  │          │    │              │    │             │    │       │  │
-│  │ Webcam   │    │  Kalman      │    │ Quadratic   │    │ Zone  │  │
-│  │ OpenCV   │    │  Filter      │    │ Extrapolat. │    │ Check │  │
-│  │ MOG2 BG  │    │  [x,y,vx,vy]│    │ 40 frames   │    │       │  │
-│  └──────────┘    └──────────────┘    └─────────────┘    └───┬───┘  │
-│       │                │                    │               │       │
-│  "Where is it?"  "How is it moving?"  "Where will it be?" "Safe?" │
-│                                                             │       │
-│                                              ┌──────────────▼────┐  │
-│                                              │  ROBOT ACTUATOR   │  │
-│                                              │  Danger → FREEZE  │  │
-│                                              │  Safe   → MOVE    │  │
-│                                              └───────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-
-  AMD Mapping:
-  FPGA  → Sensor timing / deterministic capture
-  GPU   → Physics simulation / trajectory math
-  Ryzen AI → Kalman prediction / state estimation
-  CPU   → Safety control logic
+```mermaid
+flowchart LR
+A[Camera Input] --> B[Motion Detection]
+B --> C[Kalman State Estimation]
+C --> D[Future Trajectory Prediction]
+D --> E[Safety Decision Engine]
+E -->|Safe| F[Robot Moves]
+E -->|Danger| G[Robot Blocked]
 ```
 
 ---
 
-## What It Does
+## Mapping to AMD Heterogeneous Computing
 
-| Layer | File | What it proves |
-|---|---|---|
-| Sensor ingestion | `tracker.py` | Real-world perception via MOG2 background subtraction |
-| State estimation | `state_estimator.py` | Kalman filter → position + velocity per object |
-| Trajectory prediction | `predictor.py` | Quadratic extrapolation → 40 frames into the future |
-| Safety decision | `safety.py` | Collision detected **before** impact occurs |
-| Robot actuator | `main.py` | Physical action suppressed by predicted danger |
+| PRECOG Module      | AMD Equivalent             |
+| ------------------ | -------------------------- |
+| Sensor ingestion   | Xilinx FPGA / Adaptive SoC |
+| State estimation   | AMD EPYC / Ryzen CPU       |
+| Trajectory rollout | AMD Instinct GPU (ROCm)    |
+| Prediction         | Ryzen AI NPU               |
+| Safety controller  | Embedded control logic     |
 
----
-
-## Key Insight
-
-Every other system:
-```
-event happens → AI reacts
-```
-
-PRECOG EDGE:
-```
-event predicted → AI prevents
-```
+PRECOG Edge demonstrates how heterogeneous computing enables real-time predictive autonomy at the edge.
 
 ---
 
-## How to Run
+## Installation
 
-### Requirements
+Clone the repository:
+
 ```bash
-pip install opencv-python numpy scipy matplotlib
+git clone https://github.com/<your-username>/precog-edge
+cd precog-edge
 ```
 
-### Run
+Create environment:
+
+### Windows
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the system:
+
 ```bash
 python main.py
 ```
 
-### Controls
-| Key | Action |
-|---|---|
-| `ESC` / `Q` | Quit |
-| `M` | Toggle motion mask window |
-| `R` | Reset robot arm position |
+Press **ESC** to exit.
 
 ---
 
-## Demo Guide
+## Testing the System
 
-1. **Start** — robot bar moves freely across the bottom of the frame
-2. **Roll an object** toward the **cyan circle** (protected zone) in the center
-3. The **cyan prediction arc** enters the circle before the object does
-4. System fires: `⚠ PREDICTED COLLISION — ACTION BLOCKED`
-5. **Robot freezes** — stopped by prediction, not by contact
-6. Remove object → robot resumes immediately
+1. Start the program
+2. Keep workspace empty → robot moves
+3. Roll a ball toward the circle
 
-> **"The robot did not stop because it saw a collision.  
-> It stopped because it predicted a collision."**
+Expected:
+Robot stops **before the object enters the zone**
 
----
-
-## On-Screen Legend
-
-| Color | Meaning |
-|---|---|
-| 🟩 Green box | Detected object |
-| 🟧 Orange arrow | Velocity estimate (direction + magnitude) |
-| 🩵 Cyan dots | Predicted future trajectory (40 frames) |
-| ⭕ Teal circle | Protected robot workspace |
-| 🔴 Red fill | Predicted collision imminent |
+See `TEST_GUIDE.md` for full testing procedures.
 
 ---
 
-## File Structure
+## Visual Legend
 
-```
-precog-edge/
- ├── main.py             ← Entry point, all layers wired
- ├── tracker.py          ← Step 1: MOG2 motion detection
- ├── state_estimator.py  ← Step 2: Multi-object Kalman filter
- ├── predictor.py        ← Step 3: Quadratic trajectory prediction
- ├── safety.py           ← Step 4: Predictive collision detection
- └── requirements.txt
-```
+| Overlay     | Meaning              |
+| ----------- | -------------------- |
+| Green box   | detected object      |
+| Red dot     | estimated position   |
+| Blue arrow  | velocity             |
+| Yellow dots | predicted trajectory |
+| Cyan circle | protected workspace  |
+| Blue bar    | robot arm            |
+| Red warning | predicted collision  |
 
 ---
 
-## AMD Heterogeneous Computing Alignment
+## Why This Matters
 
-This architecture maps directly to AMD's compute stack:
+PRECOG Edge shifts autonomy from reactive safety to predictive safety.
 
-- **FPGA** — deterministic sensor capture timing (represented by MOG2 pipeline)
-- **GPU** — parallel physics trajectory computation
-- **Ryzen AI NPU** — Kalman filter inference at the edge
-- **CPU** — real-time safety logic + actuation control
+Instead of machines responding to dangerous events, they anticipate them.
 
-PRECOG EDGE demonstrates a **predictive cognition layer** portable to any AMD heterogeneous platform.
+This capability enables:
+
+* safe human-robot collaboration
+* trustworthy automation
+* reliable autonomous operation
+
+We are not improving perception.
+
+We are giving machines foresight.
+
+---
+
+## Future Work
+
+* ROS2 robot integration
+* ROCm GPU simulation rollout
+* Multi-object tracking
+* Deployment on AMD adaptive SoC hardware
+
+---
+
+## Team
+
+**Temporal Systems Lab**
+
+AMD Open Innovation Hackathon 2026
+
+---
+
+## License
+
+Research prototype for demonstration and educational purposes.
