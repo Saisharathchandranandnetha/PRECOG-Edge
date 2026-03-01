@@ -98,13 +98,25 @@ It prevents a collision.
 ## Architecture
 
 ```mermaid
-flowchart LR
-A[Camera Input] --> B[Motion Detection]
-B --> C[Kalman State Estimation]
-C --> D[Future Trajectory Prediction]
-D --> E[Safety Decision Engine]
-E -->|Safe| F[Robot Moves]
-E -->|Danger| G[Robot Blocked]
+flowchart TD
+    A[Camera Sensor] --> B[FPGA Layer: Sensor Synchronization & Preprocessing]
+    A1[IMU Sensor] --> B
+    A2[Proximity Sensor] --> B
+
+    B --> C[CPU Layer: State Estimation & Control Logic]
+    C --> D[GPU Layer: Physics Simulation]
+    D --> E[NPU Layer: Temporal Prediction & Risk Estimation]
+
+    E --> F{Future Collision Predicted?}
+
+    F -- No --> G[Robot Operates Normally]
+    F -- Yes --> H[Robot Motion Blocked]
+
+    G --> I[Machine / Robot Actuator]
+    H --> I
+
+    I --> J[Visualization Interface]
+    J --> K[Human Operator]
 ```
 
 ---
